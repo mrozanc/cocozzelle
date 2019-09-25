@@ -1,9 +1,9 @@
 pluginManagement {
     plugins {
-        val nebulaInfoVersion: String by settings
-        val nebulaReleaseVersion: String by settings
-        id("nebula.info-scm") version nebulaInfoVersion
-        id("nebula.release") version nebulaReleaseVersion
+        val nebulaInfoPluginVersion: String by settings
+        val nebulaReleasePluginVersion: String by settings
+        id("nebula.info-scm") version nebulaInfoPluginVersion
+        id("nebula.release") version nebulaReleasePluginVersion
     }
 }
 
