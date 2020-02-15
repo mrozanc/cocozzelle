@@ -5,6 +5,10 @@ node {
 
     stage('build') {
         sh 'chmod +x ./gradlew'
-        sh './gradlew build'
+        sh './gradlew assemble'
+    }
+
+    stage('test') {
+        sh './gradlew test'
     }
 }
