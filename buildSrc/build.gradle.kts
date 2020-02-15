@@ -12,11 +12,10 @@ repositories {
 }
 
 dependencies {
-    val lombokPluginVersion: String by project
-    val nebulaDependencyLockPluginVersion: String by project
+    val kotlinVersion: String by project
+    val dokkaVersion: String by project
     val nebulaPublishingPluginVersion: String by project
-    implementation("com.netflix.nebula:gradle-dependency-lock-plugin:$nebulaDependencyLockPluginVersion")
     implementation("com.netflix.nebula:nebula-publishing-plugin:${nebulaPublishingPluginVersion}")
-    implementation("io.freefair.gradle:lombok-plugin:${lombokPluginVersion}")
+    implementation("org.jetbrains.dokka:dokka-gradle-plugin:${dokkaVersion}")
+    implementation(kotlin("gradle-plugin", kotlinVersion))
 }
-

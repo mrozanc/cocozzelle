@@ -7,7 +7,7 @@ subprojects {
         jcenter()
     }
     apply(plugin = "nebula.info-scm")
-    apply(plugin = "cocozzelle-publish-config")
+    apply(plugin = "kokozzelle-publish-config")
 
     configure<PublishingExtension> {
         publications {
@@ -35,6 +35,6 @@ subprojects {
 }
 
 tasks.withType<Wrapper> {
-    gradleVersion = "5.6.2"
+    gradleVersion = "6.1.1"
     distributionType = Wrapper.DistributionType.ALL
 }
