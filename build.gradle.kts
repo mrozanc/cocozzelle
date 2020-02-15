@@ -34,8 +34,7 @@ subprojects {
     }
 }
 
-tasks.register("preRelease") {
-    finalizedBy(project.getTasksByName("build", true))
+tasks.named("finalSetup") {
     doLast {
         val git = org.ajoberstar.grgit.Grgit.open()
         val releaseBranch = git.branch.current()
@@ -58,10 +57,14 @@ tasks.register("preRelease") {
 }
 
 tasks.named("release") {
-    dependsOn(tasks.named("preRelease"))
-    finalizedBy(project.getTasksByName("publishToMavenLocal", true))
+    dependsOn(project.getTasksByName("build", true))
+}
+
+tasks.named("postRelease") {
+    dependsOn(project.getTasksByName("publishToMavenLocal", true))
     doLast {
         val git = org.ajoberstar.grgit.Grgit.open()
+        println("git push origin master")
         git.push {
             remote = "origin"
             refsOrSpecs = listOf("refs/heads/master:refs/heads/master")
