@@ -34,6 +34,41 @@ subprojects {
     }
 }
 
+tasks.register("preRelease") {
+    finalizedBy(project.getTasksByName("build", true))
+    doLast {
+        val git = org.ajoberstar.grgit.Grgit.open()
+        val releaseBranch = git.branch.current()
+        println("git fetch origin master:master")
+        git.fetch {
+            remote = "origin"
+            refSpecs = listOf("+refs/heads/master:refs/heads/master")
+        }
+        println("git checkout master")
+        git.checkout {
+            branch = "master"
+        }
+        println("git merge --no-ff ${releaseBranch.name}")
+        git.merge {
+            head = releaseBranch.name
+            setMode("create-commit")
+            message = "REL v${project.version}"
+        }
+    }
+}
+
+tasks.named("release") {
+    dependsOn(tasks.named("preRelease"))
+    finalizedBy(project.getTasksByName("publishToMavenLocal", true))
+    doLast {
+        val git = org.ajoberstar.grgit.Grgit.open()
+        git.push {
+            remote = "origin"
+            refsOrSpecs = listOf("refs/heads/master:refs/heads/master")
+        }
+    }
+}
+
 tasks.withType<Wrapper> {
     gradleVersion = "6.1.1"
     distributionType = Wrapper.DistributionType.ALL
