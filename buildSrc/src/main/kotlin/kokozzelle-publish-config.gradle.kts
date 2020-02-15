@@ -3,7 +3,7 @@ plugins {
 }
 
 plugins.withId("java-platform") {
-    project.publishing {
+    project.configure<PublishingExtension> {
         publications {
             named<MavenPublication>("nebula") {
                 from(components["javaPlatform"])

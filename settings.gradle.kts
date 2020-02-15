@@ -1,18 +1,18 @@
 pluginManagement {
     plugins {
-        val nebulaInfoVersion: String by settings
-        val nebulaReleaseVersion: String by settings
-        id("nebula.info-scm") version nebulaInfoVersion
-        id("nebula.release") version nebulaReleaseVersion
+        val nebulaInfoPluginVersion: String by settings
+        val nebulaReleasePluginVersion: String by settings
+        id("nebula.info-scm") version nebulaInfoPluginVersion
+        id("nebula.release") version nebulaReleasePluginVersion
     }
 }
 
-rootProject.name = "cocozzelle"
+rootProject.name = "kokozzelle"
 
 file("$rootDir/modules").listFiles { f ->
     f.isDirectory && f.listFiles { bf ->
         bf.isFile && listOf("build.gradle", "build.gradle.kts").contains(bf.name) }?.isNotEmpty() ?: false
 }?.forEach {
-    include(":${it.name}")
-    project(":${it.name}").projectDir = it
+    include(":${rootProject.name}-${it.name}")
+    project(":${rootProject.name}-${it.name}").projectDir = it
 }
