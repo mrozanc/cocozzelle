@@ -60,17 +60,17 @@ tasks.named("release") {
     dependsOn(project.getTasksByName("build", true))
 }
 
-tasks.named("postRelease") {
-    dependsOn(project.getTasksByName("publishToMavenLocal", true))
-    doLast {
-        val git = org.ajoberstar.grgit.Grgit.open()
-        println("git push origin master")
-        git.push {
-            remote = "origin"
-            refsOrSpecs = listOf("refs/heads/master:refs/heads/master")
-        }
-    }
-}
+//tasks.named("postRelease") {
+//    dependsOn(project.getTasksByName("publishToMavenLocal", true))
+//    doLast {
+//        val git = org.ajoberstar.grgit.Grgit.open()
+//        println("git push origin master")
+//        git.push {
+//            remote = "origin"
+//            refsOrSpecs = listOf("refs/heads/master:refs/heads/master")
+//        }
+//    }
+//}
 
 tasks.withType<Wrapper> {
     gradleVersion = "6.1.1"

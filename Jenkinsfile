@@ -13,9 +13,12 @@ If it is selected, it will only allow rc, dev and devSnapshot stages and nothing
                             selectedValue: 'NONE',
                             sortMode: 'DESCENDING',
                             tagFilter: '*', type: 'PT_REVISION'),
-                    choice(choices: ['dev', 'final', 'rc', 'SNAPSHOT', 'snapshot'], description: 'Kind of release to create.', name: 'RELEASE_STAGE'),
-                    choice(choices: ['', 'minor', 'major', 'patch'], description: 'Version number incrementation.', name: 'RELEASE_SCOPE'),
-                    string(defaultValue: '', description: 'Version to release.', name: 'RELEASE_VERSION', trim: true)
+                    choice(choices: ['dev', 'final', 'rc', 'snapshot'], description: 'Kind of release to create.',
+                            name: 'RELEASE_STAGE'),
+                    choice(choices: ['', 'minor', 'major', 'patch'], description: 'Optional version number incrementation. If not set it will be inferred from current branch and existing tags.',
+                            name: 'RELEASE_SCOPE'),
+                    string(defaultValue: '', description: 'Optional version to release. Let empty to infer version.',
+                            name: 'RELEASE_VERSION', trim: true)
             ])
     ])
 
@@ -30,13 +33,44 @@ If it is selected, it will only allow rc, dev and devSnapshot stages and nothing
     }
 
     String releaseParams = ''
+    if (env.BRANCH_NAME.matches(/^hotfix\/.+/) && releaseVersion == '') {
+        if (releaseScope != '' && releaseScope != 'patch') {
+            error "Specified RELEASE_SCOPE='$releaseScope' differs from 'patch' on branch '${env.BRANCH_NAME}'"
+        }
+        releaseStage = 'patch'
+    }
+    if (releaseScope != '' && releaseVersion == '') {
+        releaseParams += " -Prelease.scope=${releaseScope}"
+    }
+
+    String releaseCommand = ''
     if (doRelease) {
         if (releaseVersion != '') {
             releaseParams += " -Prelease.version=${releaseVersion}"
-        } else if (releaseScope != '') {
-            releaseParams += " -Prelease.scope=${releaseScope}"
+        } else {
+            releaseParams += " -Prelease.stage=${releaseStage}"
         }
-        releaseParams += " -Prelease.stage=${releaseStage}"
+        if (params.COMMIT_TO_RELEASE == 'NONE') {
+            doMerge = true
+        }
+        if (!doMerge && releaseStage == 'final') {
+            error 'Release without merge selected with "final" stage. Merging into master is mandatory for a final release.'
+        }
+        switch (releaseStage) {
+            case 'dev':
+                releaseCommand = 'devSnapshot'
+                break
+            case 'final':
+                releaseCommand = 'final'
+                break
+            case 'rc':
+                releaseCommand = 'candidate'
+                break
+            case 'snapshot':
+            case 'SNAPSHOT':
+                releaseCommand = 'snapshot'
+                break
+        }
     }
 
     stage('checkout') {
@@ -53,12 +87,12 @@ If it is selected, it will only allow rc, dev and devSnapshot stages and nothing
                 ],
                 extensions       : [
                         [$class: 'UserIdentity',
-                         email: "${env.CHANGE_AUTHOR_EMAIL}",
-                         name: "Jenkins (on behalf of ${env.CHANGE_AUTHOR_DISPLAY_NAME})"],
-                        [$class : 'PreBuildMerge',
-                                     options: [fastForwardMode: 'NO_FF',
-                                               mergeRemote    : 'origin',
-                                               mergeTarget    : 'master']]
+                         email : "${env.CHANGE_AUTHOR_EMAIL}",
+                         name  : "Jenkins (on behalf of ${env.CHANGE_AUTHOR_DISPLAY_NAME})"],
+//                        [$class : 'PreBuildMerge',
+//                                     options: [fastForwardMode: 'NO_FF',
+//                                               mergeRemote    : 'origin',
+//                                               mergeTarget    : 'master']]
                 ]
         ]
 //        sh "git checkout -B ${env.BRANCH_NAME} HEAD"
@@ -70,5 +104,11 @@ If it is selected, it will only allow rc, dev and devSnapshot stages and nothing
 
     stage('test') {
         sh "sh ./gradlew ${releaseParams} test"
+    }
+
+    if (doRelease) {
+        stage('release') {
+            sh "sh ./gradlew ${releaseCommand} ${releaseParams}"
+        }
     }
 }
