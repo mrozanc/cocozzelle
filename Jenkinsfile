@@ -75,7 +75,6 @@ If it is selected, it will only allow rc, dev and devSnapshot stages and nothing
 
     stage('checkout') {
         // replace git remote URL by SSH version
-//        sh 'git remote set-url origin $(git remote -v | grep origin | head -1 | awk "{print \\$2}" | sed -r "s|^https://(.+)/([^/]+/[^/]+\\.git)$|git@\\1:\\2|")'
         checkout scm: [
                 $class           : 'GitSCM',
                 branches         : [[name: "refs/remotes/origin/${env.BRANCH_NAME}"]],
@@ -95,6 +94,9 @@ If it is selected, it will only allow rc, dev and devSnapshot stages and nothing
 //                                               mergeTarget    : 'master']]
                 ]
         ]
+        if (doRelease) {
+            sh 'git remote set-url origin $(git remote -v | grep origin | head -1 | awk "{print \\$2}" | sed -r "s|^https://(.+)/([^/]+/[^/]+\\.git)$|git@\\1:\\2|")'
+        }
 //        sh "git checkout -B ${env.BRANCH_NAME} HEAD"
     }
 
@@ -108,7 +110,9 @@ If it is selected, it will only allow rc, dev and devSnapshot stages and nothing
 
     if (doRelease) {
         stage('release') {
-            sh "sh ./gradlew ${releaseCommand} ${releaseParams}"
+            sshagent(['github-deploy-ssh-key']) {
+                sh "sh ./gradlew ${releaseCommand} ${releaseParams}"
+            }
         }
     }
 }
