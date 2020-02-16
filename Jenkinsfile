@@ -8,14 +8,23 @@ node('linux') {
             ])
     ])
 
+    boolean doRelease = params.DO_RELEASE
+    String releaseVersion = params.RELEASE_VERSION
+    String releaseScope = params.RELEASE_SCOPE
+    String releaseStage = params.RELEASE_STAGE
+    if (!doRelease && env.BRANCH_NAME == 'develop') {
+        doRelease = true
+        releaseStage = 'SNAPSHOT'
+    }
+
     String releaseParams = ''
-    if (params.DO_RELEASE) {
-        if (params.RELEASE_VERSION != '') {
-            releaseParams += " -Prelease.version=${params.RELEASE_VERSION}"
-        } else if (params.RELEASE_SCOPE != '') {
-            releaseParams += " -Prelease.scope=${params.RELEASE_SCOPE}"
+    if (doRelease) {
+        if (releaseVersion != '') {
+            releaseParams += " -Prelease.version=${releaseVersion}"
+        } else if (releaseScope != '') {
+            releaseParams += " -Prelease.scope=${releaseScope}"
         }
-        releaseParams += " -Prelease.stage=${params.RELEASE_STAGE}"
+        releaseParams += " -Prelease.stage=${releaseStage}"
     }
 
     stage('checkout') {
