@@ -20,27 +20,14 @@ node('linux') {
 
     stage('checkout') {
         checkout scm
-//        if (!env.CHANGE_ID) {
-//            // If this is not a pull request build, retrieve the branch
-//            checkout scm: [
-//                    $class           : 'GitSCM',
-//                    extensions       : [
-//                            [$class: 'LocalBranch', localBranch: ''],
-//                            [$class: 'PreBuildMerge', options: [fastForwardMode: 'NO_FF',
-//                                                                mergeRemote    : 'origin',
-//                                                                mergeTarget    : "${env.BRANCH_NAME}"]]],
-//                    userRemoteConfigs: [
-//                            [refspec: "+refs/heads/${env.BRANCH_NAME}:refs/remotes/origin/${env.BRANCH_NAME}"]
-//                    ]
-//            ]
-//        }
+        sh "git checkout -B ${env.BRANCH_NAME} HEAD"
     }
 
     stage('build') {
-        sh "sh ./gradlew ${releaseParams}assemble"
+        sh "sh ./gradlew ${releaseParams} assemble"
     }
 
     stage('test') {
-        sh "sh ./gradlew ${releaseParams}test"
+        sh "sh ./gradlew ${releaseParams} test"
     }
 }
