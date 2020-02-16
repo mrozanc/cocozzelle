@@ -28,12 +28,30 @@ node('linux') {
     }
 
     stage('checkout') {
-        checkout scm
-        sh "git checkout -B ${env.BRANCH_NAME} HEAD"
+        checkout scm: [
+                $class           : 'GitSCM',
+                branches         : [[name: "refs/remotes/origin/${env.BRANCH_NAME}"]],
+                userRemoteConfigs: [
+                        [credentialsId: 'github-mrozanc-login',
+                         name         : 'origin',
+                         refspec      : '+refs/heads/*:refs/remotes/origin/*',
+                         url          : 'https://github.com/mrozanc/cocozzelle.git']
+                ],
+                extensions       : [
+                        [$class: 'UserIdentity',
+                         email: "${env.CHANGE_AUTHOR_EMAIL}",
+                         name: "Jenkins (on behalf of ${env.CHANGE_AUTHOR_DISPLAY_NAME})"],
+                        [$class : 'PreBuildMerge',
+                                     options: [fastForwardMode: 'NO_FF',
+                                               mergeRemote    : 'origin',
+                                               mergeTarget    : 'master']]
+                ]
+        ]
+//        sh "git checkout -B ${env.BRANCH_NAME} HEAD"
     }
 
     stage('build') {
-        sh "sh ./gradlew ${releaseParams} assemble --info"
+        sh "sh ./gradlew ${releaseParams} assemble"
     }
 
     stage('test') {
