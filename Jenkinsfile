@@ -19,9 +19,8 @@ node('linux') {
     }
 
     stage('checkout') {
-        if (env.CHANGE_ID) {
-            checkout scm
-        } else {
+        checkout scm
+        if (!env.CHANGE_ID) {
             // If this is not a pull request build, retrieve the branch
             checkout scm: [
                     $class           : 'GitSCM',
