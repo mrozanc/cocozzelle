@@ -1,8 +1,12 @@
 node('linux') {
-    properties([parameters([booleanParam(defaultValue: false, description: 'If true, perform a release.', name: 'DO_RELEASE'),
-                            choice(choices: ['dev', 'final', 'rc', 'SNAPSHOT', 'snapshot'], description: 'Kind of release to create.', name: 'RELEASE_STAGE'),
-                            choice(choices: ['', 'minor', 'major', 'patch'], description: 'Version number incrementation.', name: 'RELEASE_SCOPE'),
-                            string(defaultValue: '', description: 'Version to release.', name: 'RELEASE_VERSION', trim: true)])])
+    properties([
+            parameters([
+                    booleanParam(defaultValue: false, description: 'If true, perform a release.', name: 'DO_RELEASE'),
+                    choice(choices: ['dev', 'final', 'rc', 'SNAPSHOT', 'snapshot'], description: 'Kind of release to create.', name: 'RELEASE_STAGE'),
+                    choice(choices: ['', 'minor', 'major', 'patch'], description: 'Version number incrementation.', name: 'RELEASE_SCOPE'),
+                    string(defaultValue: '', description: 'Version to release.', name: 'RELEASE_VERSION', trim: true)
+            ])
+    ])
 
     String releaseParams = ''
     if (params.DO_RELEASE) {
@@ -19,8 +23,17 @@ node('linux') {
             checkout scm
         } else {
             // If this is not a pull request build, retrieve the branch
-            checkout scm: [$class: 'GitSCM', extensions: [[$class: 'LocalBranch', localBranch: "${env.BRANCH_NAME}"]],
-                           userRemoteConfigs: [[refspec: "+refs/heads/${env.BRANCH_NAME}:refs/remotes/origin/${env.BRANCH_NAME}"]]]
+            checkout scm: [
+                    $class           : 'GitSCM',
+                    extensions       : [
+                            [$class: 'LocalBranch', localBranch: ''],
+                            [$class: 'PreBuildMerge', options: [fastForwardMode: 'NO_FF',
+                                                                mergeRemote    : 'origin',
+                                                                mergeTarget    : "${env.BRANCH_NAME}"]]],
+                    userRemoteConfigs: [
+                            [refspec: "+refs/heads/${env.BRANCH_NAME}:refs/remotes/origin/${env.BRANCH_NAME}"]
+                    ]
+            ]
         }
     }
 
