@@ -24,7 +24,7 @@ node('linux') {
     }
 
     stage('build') {
-        sh "sh ./gradlew ${releaseParams} assemble"
+        sh "sh ./gradlew ${releaseParams} assemble --info"
     }
 
     stage('test') {
