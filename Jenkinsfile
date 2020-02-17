@@ -13,7 +13,7 @@ If it is selected, it will only allow rc, dev and devSnapshot stages and nothing
                             selectedValue: 'NONE',
                             sortMode: 'DESCENDING',
                             tagFilter: '*', type: 'PT_REVISION'),
-                    choice(choices: ['dev', 'final', 'rc', 'snapshot'], description: 'Kind of release to create.',
+                    choice(choices: ['snapshot', 'rc', 'final'], description: 'Kind of release to create.',
                             name: 'RELEASE_STAGE'),
                     choice(choices: ['', 'minor', 'major', 'patch'], description: 'Optional version number incrementation. If not set it will be inferred from current branch and existing tags.',
                             name: 'RELEASE_SCOPE'),
@@ -57,9 +57,6 @@ If it is selected, it will only allow rc, dev and devSnapshot stages and nothing
             error 'Release without merge selected with "final" stage. Merging into master is mandatory for a final release.'
         }
         switch (releaseStage) {
-            case 'dev':
-                releaseCommand = 'devSnapshot'
-                break
             case 'final':
                 releaseCommand = 'final'
                 break
@@ -67,6 +64,8 @@ If it is selected, it will only allow rc, dev and devSnapshot stages and nothing
                 releaseCommand = 'candidate'
                 break
             case 'snapshot':
+                releaseCommand = 'devSnapshot'
+                break
             case 'SNAPSHOT':
                 releaseCommand = 'snapshot'
                 break
