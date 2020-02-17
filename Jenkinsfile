@@ -45,15 +45,12 @@ If it is selected, it will only allow rc, dev and devSnapshot stages and nothing
     }
 
     String releaseCommand = ''
-    String version = ''
     if (doRelease) {
         if (params.COMMIT_TO_RELEASE == 'NONE') {
             doMerge = true
         }
-        String inferredVersion = sh returnStdout: true, script: "sh ./gradlew properties -q -Prelease.stage=${releaseStage} | grep '^version:' | awk '{print \$2}'"
-        version = releaseVersion == '' ? inferredVersion.trim() : releaseVersion
-        if (releaseVersion != '' || doMerge) {
-            releaseParams += " -Prelease.version=${version}"
+        if (releaseVersion != '') {
+            releaseParams += " -Prelease.version=${releaseVersion}"
         } else {
             releaseParams += " -Prelease.stage=${releaseStage}"
         }
@@ -86,9 +83,13 @@ If it is selected, it will only allow rc, dev and devSnapshot stages and nothing
                 if (params.COMMIT_TO_RELEASE != 'NONE') {
                     sh "git checkout ${env.COMMIT_TO_RELEASE}"
                 } else if (doMerge) {
-                    sh "git config user.name 'Jenkins (on behalf of ${env.CHANGE_AUTHOR_DISPLAY_NAME})'"
-                    sh "git config user.email '${env.CHANGE_AUTHOR_EMAIL}'"
+                    sh "git config user.name 'Jenkins (on behalf of ${env.BUILD_USER})'"
+                    sh "git config user.email '${env.BUILD_USER_EMAIL}'"
                     sh "git fetch --force origin master:master"
+                    sh "git fetch --tags"
+                    // Fetch to retrieve tags AND being on right branch is necessary to infer version
+                    String inferredVersion = sh returnStdout: true, script: "sh ./gradlew properties -q -Prelease.stage=${releaseStage} | grep '^version:' | awk '{print \$2}'"
+                    version = releaseVersion == '' ? inferredVersion.trim() : releaseVersion
                     sh "git checkout master"
                     sh "git merge ${branchName} --no-ff -m 'REL ${version}'"
                 }
