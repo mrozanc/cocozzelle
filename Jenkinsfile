@@ -74,6 +74,7 @@ If it is selected, it will only allow rc, dev and devSnapshot stages and nothing
     }
 
     String branchName = env.CHANGE_ID ? env.CHANGE_BRANCH : env.BRANCH_NAME
+    String version = sh returnStdout: true, script: "sh ./gradlew properties -q ${releaseParams} | grep '^version:' | awk '{print \$2}'"
     stage('checkout') {
         checkout scm
         if (doRelease) {
@@ -82,8 +83,12 @@ If it is selected, it will only allow rc, dev and devSnapshot stages and nothing
                 sh "git fetch --force origin '${branchName}:${branchName}'"
                 if (params.COMMIT_TO_RELEASE != 'NONE') {
                     sh "git checkout ${env.COMMIT_TO_RELEASE}"
-                } else {
-                    sh "git checkout ${branchName}"
+                } else if (doMerge) {
+                    sh "git config user.name 'Jenkins (on behalf of ${env.CHANGE_AUTHOR_DISPLAY_NAME})'"
+                    sh "git config user.email '${env.CHANGE_AUTHOR_EMAIL}'"
+                    sh "git fetch --force origin master:master"
+                    sh "git checkout master"
+                    sh "git merge ${branchName} --no-ff -m 'REL ${version}'"
                 }
             }
         }
@@ -122,6 +127,9 @@ If it is selected, it will only allow rc, dev and devSnapshot stages and nothing
         stage('release') {
             sshagent(['github-deploy-ssh-key']) {
                 sh "sh ./gradlew ${releaseCommand} ${releaseParams}"
+                if (doMerge) {
+                    sh "git push origin master"
+                }
             }
         }
     }
