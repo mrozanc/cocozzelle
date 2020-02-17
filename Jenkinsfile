@@ -51,7 +51,7 @@ If it is selected, it will only allow rc, dev and devSnapshot stages and nothing
             doMerge = true
         }
         String inferredVersion = sh returnStdout: true, script: "sh ./gradlew properties -q -Prelease.stage=${releaseStage} | grep '^version:' | awk '{print \$2}'"
-        version = releaseVersion == '' ? inferredVersion : releaseVersion
+        version = releaseVersion == '' ? inferredVersion.trim() : releaseVersion
         if (releaseVersion != '' || doMerge) {
             releaseParams += " -Prelease.version=${version}"
         } else {
