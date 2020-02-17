@@ -76,20 +76,30 @@ If it is selected, it will only allow rc, dev and devSnapshot stages and nothing
     String branchName = env.CHANGE_ID ? env.CHANGE_BRANCH : env.BRANCH_NAME
     stage('checkout') {
         checkout scm
+        // Fetch to retrieve tags AND being on right branch is necessary to infer version
+        sh "git fetch --prune-tags --tags --force"
+        sh "git fetch --force origin '${branchName}:${branchName}'"
+        sh "git checkout '${branchName}'"
         if (doRelease) {
             sh 'git remote set-url origin $(git remote -v | grep origin | head -1 | awk "{print \\$2}" | sed -r "s|^https://(.+)/([^/]+/[^/]+\\.git)$|git@\\1:\\2|")'
             sshagent(['github-deploy-ssh-key']) {
-                sh "git fetch --force origin '${branchName}:${branchName}'"
+                version = releaseVersion
+                if (releaseVersion == '') {
+                    String inferredVersion = sh returnStdout: true, script: "sh ./gradlew properties -q -Prelease.stage=${releaseStage} | grep '^version:' | awk '{print \$2}'"
+                    version = inferredVersion.trim()
+                }
                 if (params.COMMIT_TO_RELEASE != 'NONE') {
                     sh "git checkout ${env.COMMIT_TO_RELEASE}"
                 } else if (doMerge) {
-                    sh "git config user.name 'Jenkins (on behalf of ${env.BUILD_USER})'"
-                    sh "git config user.email '${env.BUILD_USER_EMAIL}'"
+                    if (releaseVersion == '') {
+                        releaseParams += " -Prelease.version=${version}"
+                    }
+                    wrap([$class: 'BuildUser']) {
+                        sh "git config user.name 'Jenkins (on behalf of ${env.BUILD_USER})'"
+                        sh "git config user.email '${env.BUILD_USER_EMAIL}'"
+                    }
+                    sh "git checkout ${branchName}"
                     sh "git fetch --force origin master:master"
-                    sh "git fetch --tags"
-                    // Fetch to retrieve tags AND being on right branch is necessary to infer version
-                    String inferredVersion = sh returnStdout: true, script: "sh ./gradlew properties -q -Prelease.stage=${releaseStage} | grep '^version:' | awk '{print \$2}'"
-                    version = releaseVersion == '' ? inferredVersion.trim() : releaseVersion
                     sh "git checkout master"
                     sh "git merge ${branchName} --no-ff -m 'REL ${version}'"
                 }
