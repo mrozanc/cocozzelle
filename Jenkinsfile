@@ -14,7 +14,7 @@ If it is selected, it will only allow rc, dev and devSnapshot stages and nothing
                             sortMode: 'DESCENDING',
                             tagFilter: '*',
                             type: 'PT_REVISION'),
-                    choice(choices: ['snapshot', 'rc', 'final'], description: 'Kind of release to create.',
+                    choice(choices: ['dev', 'rc', 'final'], description: 'Kind of release to create.',
                             name: 'RELEASE_STAGE'),
                     choice(choices: ['', 'minor', 'major', 'patch'], description: 'Optional version number incrementation. If not set it will be inferred from current branch and existing tags.',
                             name: 'RELEASE_SCOPE'),
@@ -45,14 +45,17 @@ If it is selected, it will only allow rc, dev and devSnapshot stages and nothing
     }
 
     String releaseCommand = ''
+    String version = ''
     if (doRelease) {
-        if (releaseVersion != '') {
-            releaseParams += " -Prelease.version=${releaseVersion}"
-        } else {
-            releaseParams += " -Prelease.stage=${releaseStage}"
-        }
         if (params.COMMIT_TO_RELEASE == 'NONE') {
             doMerge = true
+        }
+        String inferredVersion = sh returnStdout: true, script: "sh ./gradlew properties -q -Prelease.stage=${releaseStage} | grep '^version:' | awk '{print \$2}'"
+        version = releaseVersion == '' ? inferredVersion : releaseVersion
+        if (releaseVersion != '' || doMerge) {
+            releaseParams += " -Prelease.version=${version}"
+        } else {
+            releaseParams += " -Prelease.stage=${releaseStage}"
         }
         if (!doMerge && releaseStage == 'final') {
             error 'Release without merge selected with "final" stage. Merging into master is mandatory for a final release.'
@@ -64,7 +67,7 @@ If it is selected, it will only allow rc, dev and devSnapshot stages and nothing
             case 'rc':
                 releaseCommand = 'candidate'
                 break
-            case 'snapshot':
+            case 'dev':
                 releaseCommand = 'devSnapshot'
                 break
             case 'SNAPSHOT':
@@ -74,7 +77,6 @@ If it is selected, it will only allow rc, dev and devSnapshot stages and nothing
     }
 
     String branchName = env.CHANGE_ID ? env.CHANGE_BRANCH : env.BRANCH_NAME
-    String version = sh returnStdout: true, script: "sh ./gradlew properties -q ${releaseParams} | grep '^version:' | awk '{print \$2}'"
     stage('checkout') {
         checkout scm
         if (doRelease) {
@@ -92,27 +94,6 @@ If it is selected, it will only allow rc, dev and devSnapshot stages and nothing
                 }
             }
         }
-        // replace git remote URL by SSH version
-//        checkout scm: [
-//                $class           : 'GitSCM',
-//                branches         : [[name: "refs/remotes/origin/${env.CHANGE_BRANCH}"]],
-//                userRemoteConfigs: [
-//                        [credentialsId: 'github-mrozanc-login',
-//                         name         : 'origin',
-//                         refspec      : '+refs/heads/*:refs/remotes/origin/*',
-//                         url          : 'https://github.com/mrozanc/cocozzelle.git']
-//                ],
-//                extensions       : [
-//                        [$class: 'UserIdentity',
-//                         email : "${env.CHANGE_AUTHOR_EMAIL}",
-//                         name  : "Jenkins (on behalf of ${env.CHANGE_AUTHOR_DISPLAY_NAME})"],
-////                        [$class : 'PreBuildMerge',
-////                                     options: [fastForwardMode: 'NO_FF',
-////                                               mergeRemote    : 'origin',
-////                                               mergeTarget    : 'master']]
-//                ]
-//        ]
-//        sh "git checkout -B ${env.BRANCH_NAME} HEAD"
     }
 
     stage('build') {
