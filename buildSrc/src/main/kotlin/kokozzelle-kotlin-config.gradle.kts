@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm")
     id("org.jetbrains.dokka")
-    id("nebula.maven-publish")
+    id("kokozzelle-publish-config")
 }
 
 tasks.withType<KotlinCompile> {
