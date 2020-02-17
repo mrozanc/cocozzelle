@@ -83,8 +83,8 @@ If it is selected, it will only allow rc, dev and devSnapshot stages and nothing
                 if (params.COMMIT_TO_RELEASE != 'NONE') {
                     sh "git checkout ${env.COMMIT_TO_RELEASE}"
                 } else if (doMerge) {
-                    sh "git config user.name 'Jenkins (on behalf of ${env.CHANGE_AUTHOR_DISPLAY_NAME})'"
-                    sh "git config user.email '${env.CHANGE_AUTHOR_EMAIL}'"
+                    sh "git config user.name 'Jenkins (on behalf of ${env.BUILD_USER})'"
+                    sh "git config user.email '${env.BUILD_USER_EMAIL}'"
                     sh "git fetch --force origin master:master"
                     sh "git fetch --tags"
                     // Fetch to retrieve tags AND being on right branch is necessary to infer version
