@@ -1,1 +1,3 @@
-# cocozzelle
+# kokozzelle
+
+A lib of Cucumber helpers.
