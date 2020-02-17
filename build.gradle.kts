@@ -34,28 +34,6 @@ subprojects {
     }
 }
 
-tasks.named("finalSetup") {
-    doLast {
-        val git = org.ajoberstar.grgit.Grgit.open()
-        val releaseBranch = git.branch.current()
-        println("git fetch origin master:master")
-        git.fetch {
-            remote = "origin"
-            refSpecs = listOf("+refs/heads/master:refs/heads/master")
-        }
-        println("git checkout master")
-        git.checkout {
-            branch = "master"
-        }
-        println("git merge --no-ff ${releaseBranch.name}")
-        git.merge {
-            head = releaseBranch.name
-            setMode("create-commit")
-            message = "REL v${project.version}"
-        }
-    }
-}
-
 tasks.named("release") {
     dependsOn(project.getTasksByName("build", true))
 }
