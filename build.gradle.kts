@@ -62,14 +62,6 @@ tasks.named("release") {
 
 tasks.named("postRelease") {
     dependsOn(project.getTasksByName("publish", true))
-//    doLast {
-//        val git = org.ajoberstar.grgit.Grgit.open()
-//        println("git push origin master")
-//        git.push {
-//            remote = "origin"
-//            refsOrSpecs = listOf("refs/heads/master:refs/heads/master")
-//        }
-//    }
 }
 
 tasks.withType<Wrapper> {
