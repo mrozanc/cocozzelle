@@ -12,7 +12,8 @@ If it is selected, it will only allow rc, dev and devSnapshot stages and nothing
                             quickFilterEnabled: true,
                             selectedValue: 'NONE',
                             sortMode: 'DESCENDING',
-                            tagFilter: '*', type: 'PT_REVISION'),
+                            tagFilter: '*',
+                            type: 'PT_REVISION'),
                     choice(choices: ['snapshot', 'rc', 'final'], description: 'Kind of release to create.',
                             name: 'RELEASE_STAGE'),
                     choice(choices: ['', 'minor', 'major', 'patch'], description: 'Optional version number incrementation. If not set it will be inferred from current branch and existing tags.',
@@ -72,30 +73,37 @@ If it is selected, it will only allow rc, dev and devSnapshot stages and nothing
         }
     }
 
+    String branchName = env.CHANGE_ID ? env.CHANGE_BRANCH : env.BRANCH_NAME
     stage('checkout') {
-        // replace git remote URL by SSH version
-        checkout scm: [
-                $class           : 'GitSCM',
-                branches         : [[name: "refs/remotes/origin/${env.BRANCH_NAME}"]],
-                userRemoteConfigs: [
-                        [credentialsId: 'github-mrozanc-login',
-                         name         : 'origin',
-                         refspec      : '+refs/heads/*:refs/remotes/origin/*',
-                         url          : 'https://github.com/mrozanc/cocozzelle.git']
-                ],
-                extensions       : [
-                        [$class: 'UserIdentity',
-                         email : "${env.CHANGE_AUTHOR_EMAIL}",
-                         name  : "Jenkins (on behalf of ${env.CHANGE_AUTHOR_DISPLAY_NAME})"],
-//                        [$class : 'PreBuildMerge',
-//                                     options: [fastForwardMode: 'NO_FF',
-//                                               mergeRemote    : 'origin',
-//                                               mergeTarget    : 'master']]
-                ]
-        ]
-        if (doRelease) {
-            sh 'git remote set-url origin $(git remote -v | grep origin | head -1 | awk "{print \\$2}" | sed -r "s|^https://(.+)/([^/]+/[^/]+\\.git)$|git@\\1:\\2|")'
+        sh 'git remote set-url origin $(git remote -v | grep origin | head -1 | awk "{print \\$2}" | sed -r "s|^https://(.+)/([^/]+/[^/]+\\.git)$|git@\\1:\\2|")'
+        sshagent(['github-deploy-ssh-key']) {
+            sh "git fetch --force origin '${branchName}:${branchName}'"
+            if (doRelease && params.COMMIT_TO_RELEASE != 'NONE') {
+                sh "git checkout ${env.COMMIT_TO_RELEASE}"
+            } else {
+                sh "git checkout ${branchName}"
+            }
         }
+        // replace git remote URL by SSH version
+//        checkout scm: [
+//                $class           : 'GitSCM',
+//                branches         : [[name: "refs/remotes/origin/${env.CHANGE_BRANCH}"]],
+//                userRemoteConfigs: [
+//                        [credentialsId: 'github-mrozanc-login',
+//                         name         : 'origin',
+//                         refspec      : '+refs/heads/*:refs/remotes/origin/*',
+//                         url          : 'https://github.com/mrozanc/cocozzelle.git']
+//                ],
+//                extensions       : [
+//                        [$class: 'UserIdentity',
+//                         email : "${env.CHANGE_AUTHOR_EMAIL}",
+//                         name  : "Jenkins (on behalf of ${env.CHANGE_AUTHOR_DISPLAY_NAME})"],
+////                        [$class : 'PreBuildMerge',
+////                                     options: [fastForwardMode: 'NO_FF',
+////                                               mergeRemote    : 'origin',
+////                                               mergeTarget    : 'master']]
+//                ]
+//        ]
 //        sh "git checkout -B ${env.BRANCH_NAME} HEAD"
     }
 
