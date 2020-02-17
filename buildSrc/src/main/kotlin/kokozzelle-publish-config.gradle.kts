@@ -11,8 +11,8 @@ configure<PublishingExtension> {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/mrozanc/cocozzelle")
             credentials {
-                project.getCredentials("gpr.user")
-                project.getCredentials("gpr.key")
+                username = project.getCredentials("gpr.user")
+                password = project.getCredentials("gpr.key")
             }
         }
     }
