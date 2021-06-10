@@ -1,0 +1,46 @@
+[versions]
+
+# Dependencies versions
+cucumber = "6.10.4"
+groovy = "3.0.7"
+jackson-bom = "2.12.3"
+junit-jupiter = "5.7.2"
+kotlin = "1.5.10"
+kotlinx-serialization = "1.2.1"
+kotest = "4.6.0"
+
+[libraries]
+cucumber-core = { module = "io.cucumber:cucumber-core", version.ref = "cucumber" }
+cucumber-java = { module = "io.cucumber:cucumber-java", version.ref = "cucumber" }
+cucumber-java8 = { module = "io.cucumber:cucumber-java8", version.ref = "cucumber" }
+cucumber-jvm = { module = "io.cucumber:cucumber-jvm", version.ref = "cucumber" }
+cucumber-junit-platform-engine = { module = "io.cucumber:cucumber-junit-platform-engine", version.ref = "cucumber" }
+cucumber-spring = { module = "io.cucumber:cucumber-spring", version.ref = "cucumber" }
+
+groovy = { module = "org.codehaus.groovy:groovy", version.ref = "groovy" }
+
+jackson-bom = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "jackson-bom" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
+jackson-dataformat-properties = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-properties" }
+jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
+
+junit-jupiter-bom = { module = "org.junit:junit-bom", version.ref = "junit-jupiter" }
+
+kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
+kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest" }
+kotest-runner-junit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
+
+kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+kotlin-stdlib-main = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+kotlin-stdlib-jdk7 = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk7", version.ref = "kotlin" }
+kotlin-stdlib-jdk8 = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
+kotlin-test-main = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+kotlin-test-junit5 = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref = "kotlin" }
+kotlinx-serialization-properties = { module = "org.jetbrains.kotlinx:kotlinx-serialization-properties", version.ref = "kotlinx-serialization" }
+
+[bundles]
+cucumber-all = ["cucumber-java", "cucumber-java8", "cucumber-spring"]
+cucumber-runner = ["cucumber-java", "cucumber-java8", "cucumber-spring"]
+kotest = ["kotest-runner-junit5", "kotest-assertions-core", "kotest-property"]
+kotlin = ["kotlin-reflect", "kotlin-stdlib-jdk8", "kotlin-stdlib-jdk7", "kotlin-stdlib-main"]

@@ -1,11 +1,11 @@
 package fr.rozanc.kokozzelle.dataview.accessor
 
-import fr.rozanc.cocozzelle.datatable.ColumnExpression
+import fr.rozanc.kokozzelle.datatable.ColumnExpression
 import kotlin.reflect.full.declaredMemberProperties
 
-class KeyValueAccessor : ValueAccessor {
+class KeyValueAccessor(private val expression: ColumnExpression) : ValueAccessor {
 
-    override fun accessValue(dataContainer: Any, expression: ColumnExpression): Any? {
+    override fun accessValue(dataContainer: Any): Any? {
         if (dataContainer is Map<*, *>) {
             return dataContainer[expression.string]
         }

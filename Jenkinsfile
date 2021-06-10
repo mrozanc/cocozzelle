@@ -77,12 +77,11 @@ If it is selected, it will only allow rc, dev and devSnapshot stages and nothing
     stage('checkout') {
         checkout scm
         // Fetch to retrieve tags AND being on right branch is necessary to infer version
-        sh "git fetch --prune-tags --tags --force"
-        sh "git fetch --force origin '${branchName}:${branchName}'"
-        sh "git checkout '${branchName}'"
-        if (doRelease) {
-            sh 'git remote set-url origin $(git remote -v | grep origin | head -1 | awk "{print \\$2}" | sed -r "s|^https://(.+)/([^/]+/[^/]+\\.git)$|git@\\1:\\2|")'
-            sshagent(['github-deploy-ssh-key']) {
+
+        sshagent(['github-deploy-ssh-key']) {
+            sh "git fetch --prune-tags --tags --force"
+            if (doRelease) {
+                sh 'git remote set-url origin $(git remote -v | grep origin | head -1 | awk "{print \\$2}" | sed -r "s|^https://(.+)/([^/]+/[^/]+\\.git)$|git@\\1:\\2|")'
                 version = releaseVersion
                 if (releaseVersion == '') {
                     String inferredVersion = sh returnStdout: true, script: "sh ./gradlew properties -q -Prelease.stage=${releaseStage} | grep '^version:' | awk '{print \$2}'"
@@ -108,17 +107,28 @@ If it is selected, it will only allow rc, dev and devSnapshot stages and nothing
     }
 
     stage('build') {
-        sh "sh ./gradlew ${releaseParams} assemble"
+        sh "./gradlew clean ${releaseParams} assemble"
     }
 
     stage('test') {
-        sh "sh ./gradlew ${releaseParams} test"
+        try {
+            sh "./gradlew ${releaseParams} check"
+        } finally {
+            junit '**/build/test-results/**/*.xml'
+        }
+    }
+
+    stage('publication') {
+        withCredentials([usernamePassword(credentialsId: 'github-jenkins-package-token', passwordVariable: 'GPR_PACKAGE_KEY', usernameVariable: 'GPR_PACKAGE_USER')]) {
+            sh "./gradlew publish"
+        }
+        archiveArtifacts artifacts: '**/build/libs/**/*'
     }
 
     if (doRelease) {
         stage('release') {
             sshagent(['github-deploy-ssh-key']) {
-                sh "sh ./gradlew ${releaseCommand} ${releaseParams}"
+                sh "./gradlew ${releaseCommand} ${releaseParams}"
                 if (doMerge) {
                     sh "git push origin master"
                 }

@@ -1,16 +1,16 @@
 plugins {
-    id("kokozzelle-kotlin-config")
+    kotlin("jvm")
+    id("kokozzelle.kotlin-conventions")
 }
 
 dependencies {
-    api(enforcedPlatform(project(":kokozzelle-platform")))
-    api(enforcedPlatform(project(":kokozzelle-dependencies")))
-    implementation("com.fasterxml.jackson.core:jackson-databind")
-    implementation("io.cucumber:cucumber-java8")
-    implementation(kotlin("reflect"))
-    implementation(kotlin("stdlib-jdk8"))
+    api(platform(project(":kokozzelle-platform")))
+    implementation(platform(project(":kokozzelle-dependencies")))
+    implementation(libs.jackson.module.kotlin)
+    implementation(libs.jackson.databind)
+    implementation(libs.cucumber.java8)
+    implementation(libs.groovy)
+    implementation(libs.bundles.kotlin)
 
-    testImplementation("com.willowtreeapps.assertk:assertk-jvm")
-    testImplementation("org.spekframework.spek2:spek-dsl-jvm")
-    testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5")
+    testImplementation(libs.bundles.kotest)
 }

@@ -4,11 +4,6 @@
     <annotationProcessing>
       <profile default="true" name="Default" enabled="true" />
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="cocozzelle.buildSrc.main" target="1.8" />
-      <module name="cocozzelle.buildSrc.test" target="1.8" />
-      <module name="cocozzelle.cocozzelle-core.main" target="1.8" />
-      <module name="cocozzelle.cocozzelle-core.test" target="1.8" />
-    </bytecodeTargetLevel>
+    <bytecodeTargetLevel target="1.8" />
   </component>
 </project>

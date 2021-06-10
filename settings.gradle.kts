@@ -1,11 +1,4 @@
-pluginManagement {
-    plugins {
-        val nebulaInfoPluginVersion: String by settings
-        val nebulaReleasePluginVersion: String by settings
-        id("nebula.info-scm") version nebulaInfoPluginVersion
-        id("nebula.release") version nebulaReleasePluginVersion
-    }
-}
+enableFeaturePreview("VERSION_CATALOGS")
 
 rootProject.name = "kokozzelle"
 
